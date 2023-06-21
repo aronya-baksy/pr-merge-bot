@@ -34,6 +34,22 @@ func main() {
 		}
 
 		log.Printf("Approved PR Review Request: %v", review)
+
+		// Attempt PR merge
+		if !*pr.Merged && *pr.Mergeable {
+
+			mergeCommitMessage := "Merge onboarding request"
+			mergeOptions := &github.PullRequestOptions{CommitTitle: mergeCommitMessage, SHA: *pr.Head.SHA, MergeMethod: "squash"}
+			mergeResult, _, err := ctx.GitHub.PullRequests.Merge(context.Background(), *repo.Owner.Login, *repo.Name, pr.GetNumber(), mergeCommitMessage, mergeOptions)
+
+			if err != nil {
+				log.Printf("Failed to merge PR: %v", err)
+				return err
+			}
+
+			log.Printf("Pull Request merged: %v ", mergeResult.Merged)
+
+		}
 		return nil
 	})
 
